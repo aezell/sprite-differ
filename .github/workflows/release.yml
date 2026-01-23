@@ -22,14 +22,26 @@ jobs:
             os: ubuntu-latest
             artifact: sprite-differ-linux-aarch64
           - target: macos_x86_64
-            os: macos-13
+            os: macos-15-large
             artifact: sprite-differ-macos-x86_64
           - target: macos_aarch64
-            os: macos-14
+            os: macos-latest
             artifact: sprite-differ-macos-aarch64
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install zig and xz (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xz-utils
+          sudo snap install zig --classic --beta
+
+      - name: Install zig and xz (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install zig xz
 
       - name: Set up Elixir
         uses: erlef/setup-beam@v1

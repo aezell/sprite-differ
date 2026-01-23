@@ -61,21 +61,94 @@ MIX_ENV=prod mix release sprite_differ
 cp burrito_out/sprite_differ_linux_x86_64 ~/.local/bin/sprite-differ
 ```
 
-## Configuration
+## Usage
 
-Set your Sprites API token:
+sprite-differ supports two modes:
+- **Local mode** - Run directly on a sprite, no API token needed
+- **Remote mode** - Manage sprites remotely via the Sprites API
+
+---
+
+## Local Mode (on a sprite)
+
+No configuration needed. Create manifests and compare them directly on the sprite.
+
+### Create a manifest
+
+```bash
+sprite-differ local manifest before-changes
+```
+
+Output:
+```
+Creating local manifest: before-changes
+Scanning: /home
+Manifest saved: /.sprite-diff/manifests/before-changes.json
+Files scanned: 1247
+Total size: 52.4 MB
+```
+
+### Make changes, then create another manifest
+
+```bash
+# ... edit files, install packages, etc ...
+
+sprite-differ local manifest after-changes
+```
+
+### Compare the manifests
+
+```bash
+sprite-differ local diff \
+  /.sprite-diff/manifests/before-changes.json \
+  /.sprite-diff/manifests/after-changes.json
+```
+
+Output:
+```
+COMPARING before-changes → after-changes
+────────────────────────────────────────────────────────────
+
+SUMMARY
+  Files changed:  47
+  Files added:    12
+  Files modified: 23
+  Files deleted:  3
+
+  Size delta:     +1.1 MB
+  Similarity:     94.2%
+
+CHANGES
+  A  lib/my_app/billing.ex            +156
+  M  lib/my_app/accounts.ex           +45 -12
+  D  lib/my_app/legacy_auth.ex        -203
+  ... (more files)
+```
+
+### List saved manifests
+
+```bash
+sprite-differ local list
+```
+
+### Scan a specific directory
+
+```bash
+sprite-differ local manifest my-snapshot --path /home/user/myproject
+```
+
+---
+
+## Remote Mode (via API)
+
+For managing sprites remotely. Requires a Sprites API token.
+
+### Configuration
 
 ```bash
 export SPRITES_TOKEN=your_api_token_here
+export SPRITES_API_URL=https://api.sprites.dev  # optional
 ```
-
-Optionally set a custom API URL:
-
-```bash
-export SPRITES_API_URL=https://api.sprites.dev  # default
-```
-
-## Usage
 
 ### List checkpoints
 
@@ -190,26 +263,6 @@ sprite-differ agent trigger my-sprite
 sprite-differ agent uninstall my-sprite
 ```
 
-## Local Usage (without API)
-
-You can run the agent directly on a sprite without the API:
-
-```bash
-# Create the agent directory
-sudo mkdir -p /.sprite-diff/manifests
-
-# Copy the agent script (or create it manually)
-# Then create manifests directly:
-/.sprite-diff/agent.sh create-manifest checkpoint-1
-
-# Make some changes...
-
-/.sprite-diff/agent.sh create-manifest checkpoint-2
-
-# List manifests
-/.sprite-diff/agent.sh list-manifests
-```
-
 ## Manifest Format
 
 Manifests are JSON files containing:
@@ -266,7 +319,12 @@ Manifests are JSON files containing:
 ```
 sprite-differ <command> [options]
 
-COMMANDS:
+LOCAL COMMANDS (no API token needed):
+  local manifest [checkpoint-id]               Create manifest of current filesystem
+  local list                                   List saved manifests
+  local diff <manifest-a> <manifest-b>         Compare two manifest files
+
+REMOTE COMMANDS (requires SPRITES_TOKEN):
   checkpoints <sprite>                         List all checkpoints
   manifest <sprite> <checkpoint>               Generate manifest for checkpoint
   diff <sprite> <checkpoint-a> <checkpoint-b>  Compare two checkpoints
@@ -282,6 +340,7 @@ OPTIONS:
   -j, --json      Output as JSON
   -s, --summary   Show only summary (for diff)
   -o, --output    Write output to file
+  -p, --path      Base path to scan (default: /home)
 ```
 
 ## Architecture

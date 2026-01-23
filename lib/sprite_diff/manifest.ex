@@ -141,6 +141,105 @@ defmodule SpriteDiff.Manifest do
     end
   end
 
+  @doc """
+  Generate a manifest locally without using the API.
+  Scans the local filesystem directly.
+  """
+  def generate_local(checkpoint_id, base_path \\ "/home", opts \\ []) do
+    excludes = Keyword.get(opts, :excludes, @default_excludes)
+
+    try do
+      files =
+        base_path
+        |> scan_directory(excludes)
+        |> Enum.map(&get_file_info/1)
+        |> Enum.reject(&is_nil/1)
+
+      total_size = Enum.reduce(files, 0, fn f, acc -> acc + (f["size"] || 0) end)
+
+      manifest = %{
+        "checkpoint_id" => checkpoint_id,
+        "created_at" => DateTime.utc_now() |> DateTime.to_iso8601(),
+        "base_path" => base_path,
+        "files" => files,
+        "total_files" => length(files),
+        "total_size" => total_size
+      }
+
+      {:ok, manifest}
+    rescue
+      e -> {:error, Exception.message(e)}
+    end
+  end
+
+  defp scan_directory(path, excludes) do
+    if should_exclude?(path, excludes) do
+      []
+    else
+      case File.ls(path) do
+        {:ok, entries} ->
+          entries
+          |> Enum.flat_map(fn entry ->
+            full_path = Path.join(path, entry)
+
+            cond do
+              should_exclude?(full_path, excludes) ->
+                []
+
+              File.dir?(full_path) ->
+                scan_directory(full_path, excludes)
+
+              File.regular?(full_path) ->
+                [full_path]
+
+              true ->
+                []
+            end
+          end)
+
+        {:error, _} ->
+          []
+      end
+    end
+  end
+
+  defp should_exclude?(path, excludes) do
+    Enum.any?(excludes, fn exclude ->
+      String.starts_with?(path, exclude) or
+        String.contains?(path, "/node_modules/") or
+        String.contains?(path, "/__pycache__/") or
+        String.ends_with?(path, ".pyc")
+    end)
+  end
+
+  defp get_file_info(path) do
+    try do
+      stat = File.stat!(path)
+      hash = compute_sha256(path)
+
+      %{
+        "path" => path,
+        "type" => "file",
+        "size" => stat.size,
+        "mtime" => stat.mtime |> NaiveDateTime.from_erl!() |> NaiveDateTime.to_iso8601(),
+        "mode" => Integer.to_string(stat.mode, 8) |> String.slice(-3, 3),
+        "sha256" => hash
+      }
+    rescue
+      _ -> nil
+    end
+  end
+
+  defp compute_sha256(path) do
+    case File.read(path) do
+      {:ok, content} ->
+        :crypto.hash(:sha256, content) |> Base.encode16(case: :lower)
+
+      {:error, _} ->
+        nil
+    end
+  end
+
   defp parse_file_output(output) do
     output
     |> String.split("\n", trim: true)

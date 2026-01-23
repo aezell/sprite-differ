@@ -15,12 +15,35 @@ sprite-differ solves the problem of opaque checkpoints. Instead of guessing what
 
 ## Installation
 
-### Prerequisites
+### Quick install (recommended)
 
-- Elixir 1.14+ and Erlang/OTP 25+
-- A Sprites API token
+```bash
+curl -fsSL https://raw.githubusercontent.com/aezell/sprite-differ/main/install.sh | bash
+```
+
+This downloads the latest pre-built binary for your platform to `~/.local/bin/`.
+
+### Download binary manually
+
+Download the latest release for your platform from [GitHub Releases](https://github.com/aezell/sprite-differ/releases):
+
+| Platform | Download |
+|----------|----------|
+| Linux x86_64 | `sprite-differ-linux-x86_64` |
+| Linux ARM64 | `sprite-differ-linux-aarch64` |
+| macOS x86_64 | `sprite-differ-macos-x86_64` |
+| macOS ARM64 | `sprite-differ-macos-aarch64` |
+
+```bash
+# Example: download and install on Linux x86_64
+curl -fsSL https://github.com/aezell/sprite-differ/releases/latest/download/sprite-differ-linux-x86_64 \
+  -o ~/.local/bin/sprite-differ
+chmod +x ~/.local/bin/sprite-differ
+```
 
 ### Build from source
+
+Requires Elixir 1.14+ and Erlang/OTP 25+.
 
 ```bash
 git clone https://github.com/aezell/sprite-differ
@@ -29,11 +52,13 @@ cd sprite-differ
 # Install dependencies
 mix deps.get
 
-# Build the CLI
+# Build the CLI (escript - requires Erlang runtime)
 mix escript.build
-
-# Optional: install to your PATH
 cp sprite-differ ~/.local/bin/
+
+# Or build standalone binary (no runtime needed)
+MIX_ENV=prod mix release sprite_differ
+cp burrito_out/sprite_differ_linux_x86_64 ~/.local/bin/sprite-differ
 ```
 
 ## Configuration

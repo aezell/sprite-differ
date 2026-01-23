@@ -13,7 +13,7 @@ defmodule SpriteDiff.MixProject do
   end
 
   def escript do
-    [main_module: SpriteDiff.CLI]
+    [main_module: SpriteDiff.CLI, name: :"sprite-differ"]
   end
 
   def application do

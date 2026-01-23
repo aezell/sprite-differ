@@ -10,38 +10,17 @@ permissions:
 
 jobs:
   build:
-    name: Build ${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - target: linux_x86_64
-            os: ubuntu-latest
-            artifact: sprite-differ-linux-x86_64
-          - target: linux_aarch64
-            os: ubuntu-latest
-            artifact: sprite-differ-linux-aarch64
-          - target: macos_x86_64
-            os: macos-15-large
-            artifact: sprite-differ-macos-x86_64
-          - target: macos_aarch64
-            os: macos-latest
-            artifact: sprite-differ-macos-aarch64
+    name: Build all targets
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install zig and xz (Ubuntu)
-        if: runner.os == 'Linux'
+      - name: Install zig and xz
         run: |
           sudo apt-get update
           sudo apt-get install -y xz-utils
           sudo snap install zig --classic --beta
-
-      - name: Install zig and xz (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install zig xz
 
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
@@ -55,39 +34,18 @@ jobs:
           mix local.rebar --force
           mix deps.get
 
-      - name: Build release
+      - name: Build all releases
         env:
           MIX_ENV: prod
         run: |
           mix release sprite_differ --overwrite
 
-      - name: Rename binary
-        run: |
-          mv burrito_out/sprite_differ_${{ matrix.target }} ${{ matrix.artifact }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}
-
-  release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Prepare release files
+      - name: Prepare binaries
         run: |
           mkdir -p release
-          for dir in artifacts/*/; do
-            cp "$dir"* release/
+          for f in burrito_out/sprite_differ_*; do
+            target=$(basename "$f" | sed 's/sprite_differ_//')
+            cp "$f" "release/sprite-differ-${target}"
           done
           chmod +x release/*
           ls -la release/

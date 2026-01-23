@@ -137,6 +137,16 @@ sprite-differ local list
 sprite-differ local manifest my-snapshot --path /home/user/myproject
 ```
 
+### Tip: Auto-manifest before checkpoints
+
+To automatically create a manifest every time you create a checkpoint, add an alias to your shell profile (`~/.bashrc` or `~/.zshrc`):
+
+```bash
+alias checkpoint='sprite-differ local manifest "pre-$(date +%Y%m%d-%H%M%S)" && sprite checkpoint create'
+```
+
+Now running `checkpoint` will capture a manifest right before the checkpoint is created.
+
 ---
 
 ## Remote Mode (via API)

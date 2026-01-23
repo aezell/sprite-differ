@@ -5,19 +5,25 @@ defmodule SpriteDiff.Application do
 
   @impl true
   def start(_type, _args) do
-    children = []
-
-    opts = [strategy: :one_for_one, name: SpriteDiff.Supervisor]
-    result = Supervisor.start_link(children, opts)
-
-    # When running as a Burrito binary, handle CLI args
-    # Burrito sets BURRITO_BIN_PATH when running as a wrapped binary
-    if System.get_env("BURRITO_BIN_PATH") do
-      args = Burrito.Util.Args.get_arguments()
+    # This is a CLI tool - run CLI and exit
+    # Skip CLI mode only when running in IEx or tests
+    unless iex_running?() or mix_env_test?() do
+      args = System.argv()
       SpriteDiff.CLI.main(args)
       System.halt(0)
     end
 
-    result
+    # For IEx/test mode, start minimal supervisor
+    children = []
+    opts = [strategy: :one_for_one, name: SpriteDiff.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  defp iex_running? do
+    Code.ensure_loaded?(IEx) and IEx.started?()
+  end
+
+  defp mix_env_test? do
+    function_exported?(Mix, :env, 0) and Mix.env() == :test
   end
 end

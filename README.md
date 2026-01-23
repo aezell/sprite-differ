@@ -1,10 +1,10 @@
-# sprite-diff
+# sprite-differ
 
 Compare Sprites checkpoints to see what changed between any two points in time.
 
 ## Overview
 
-sprite-diff solves the problem of opaque checkpoints. Instead of guessing what changed between checkpoint-7 and checkpoint-12, you can see exactly which files were added, modified, or deleted.
+sprite-differ solves the problem of opaque checkpoints. Instead of guessing what changed between checkpoint-7 and checkpoint-12, you can see exactly which files were added, modified, or deleted.
 
 **Key features:**
 - List and inspect checkpoints with metadata
@@ -24,7 +24,7 @@ sprite-diff solves the problem of opaque checkpoints. Instead of guessing what c
 
 ```bash
 git clone https://github.com/aezell/sprite-differ
-cd sprite-differ/sprite_diff
+cd sprite-differ
 
 # Install dependencies
 mix deps.get
@@ -33,7 +33,7 @@ mix deps.get
 mix escript.build
 
 # Optional: install to your PATH
-cp sprite_diff ~/.local/bin/sprite-diff
+cp sprite-differ ~/.local/bin/
 ```
 
 ## Configuration
@@ -55,7 +55,7 @@ export SPRITES_API_URL=https://api.sprites.dev  # default
 ### List checkpoints
 
 ```bash
-sprite-diff checkpoints my-sprite
+sprite-differ checkpoints my-sprite
 ```
 
 Output:
@@ -73,7 +73,7 @@ checkpoint-2025-01-19               2025-01-19 17:00      51.2 MB
 ### Compare two checkpoints
 
 ```bash
-sprite-diff diff my-sprite checkpoint-2025-01-19 checkpoint-2025-01-20-pm
+sprite-differ diff my-sprite checkpoint-2025-01-19 checkpoint-2025-01-20-pm
 ```
 
 Output:
@@ -102,7 +102,7 @@ CHANGES
 ### View file content diff
 
 ```bash
-sprite-diff file my-sprite checkpoint-a checkpoint-b lib/my_app/accounts.ex
+sprite-differ file my-sprite checkpoint-a checkpoint-b lib/my_app/accounts.ex
 ```
 
 Output:
@@ -128,8 +128,8 @@ Output:
 Add `--json` to any command for machine-readable output:
 
 ```bash
-sprite-diff checkpoints my-sprite --json
-sprite-diff diff my-sprite cp-a cp-b --json
+sprite-differ checkpoints my-sprite --json
+sprite-differ diff my-sprite cp-a cp-b --json
 ```
 
 ## Agent Installation
@@ -139,7 +139,7 @@ The agent creates manifests automatically, making diffs fast and non-disruptive.
 ### Install the agent on a sprite
 
 ```bash
-sprite-diff agent install my-sprite
+sprite-differ agent install my-sprite
 ```
 
 This installs a lightweight bash script at `/.sprite-diff/agent.sh` that:
@@ -150,19 +150,19 @@ This installs a lightweight bash script at `/.sprite-diff/agent.sh` that:
 ### Check agent status
 
 ```bash
-sprite-diff agent status my-sprite
+sprite-differ agent status my-sprite
 ```
 
 ### Manually trigger a manifest
 
 ```bash
-sprite-diff agent trigger my-sprite
+sprite-differ agent trigger my-sprite
 ```
 
 ### Uninstall the agent
 
 ```bash
-sprite-diff agent uninstall my-sprite
+sprite-differ agent uninstall my-sprite
 ```
 
 ## Local Usage (without API)
@@ -239,7 +239,7 @@ Manifests are JSON files containing:
 ## Command Reference
 
 ```
-sprite-diff <command> [options]
+sprite-differ <command> [options]
 
 COMMANDS:
   checkpoints <sprite>                         List all checkpoints
@@ -263,7 +263,7 @@ OPTIONS:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     SPRITE-DIFF CLI                         │
+│                    SPRITE-DIFFER CLI                        │
 │                                                             │
 │  • checkpoints    • manifest    • diff    • agent           │
 └─────────────────────┬───────────────────────────────────────┘

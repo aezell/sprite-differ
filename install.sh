@@ -45,7 +45,7 @@ detect_platform() {
         *)       error "Unsupported architecture: $(uname -m)" ;;
     esac
 
-    echo "${os}-${arch}"
+    echo "${os}_${arch}"
 }
 
 # Get latest release version

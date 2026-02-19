@@ -3,6 +3,8 @@ defmodule SpriteDiff.Formatter do
   Formats output for terminal display.
   """
 
+  alias SpriteDiff.Utils
+
   # ANSI color codes
   @reset "\e[0m"
   @bold "\e[1m"
@@ -31,7 +33,7 @@ defmodule SpriteDiff.Formatter do
     Enum.each(checkpoints, fn cp ->
       id = truncate(cp["id"] || "unknown", 33)
       created = format_datetime(cp["created_at"])
-      size = format_bytes(cp["size"])
+      size = Utils.format_bytes(cp["size"])
 
       IO.puts(
         String.pad_trailing(id, 35) <>
@@ -54,7 +56,7 @@ defmodule SpriteDiff.Formatter do
     Created: #{manifest["created_at"]}
     Base Path: #{manifest["base_path"]}
     Total Files: #{manifest["total_files"]}
-    Total Size: #{format_bytes(manifest["total_size"])}
+    Total Size: #{Utils.format_bytes(manifest["total_size"])}
     """
   end
 
@@ -117,17 +119,17 @@ defmodule SpriteDiff.Formatter do
 
     size_info = case change["status"] do
       "added" ->
-        "#{@green}+#{format_bytes(change["size_after"])}#{@reset}"
+        "#{@green}+#{Utils.format_bytes(change["size_after"])}#{@reset}"
 
       "deleted" ->
-        "#{@red}-#{format_bytes(change["size_before"])}#{@reset}"
+        "#{@red}-#{Utils.format_bytes(change["size_before"])}#{@reset}"
 
       "modified" ->
         delta = (change["size_after"] || 0) - (change["size_before"] || 0)
         if delta >= 0 do
-          "#{@yellow}+#{format_bytes(delta)}#{@reset}"
+          "#{@yellow}+#{Utils.format_bytes(delta)}#{@reset}"
         else
-          "#{@yellow}#{format_bytes(delta)}#{@reset}"
+          "#{@yellow}#{Utils.format_bytes(delta)}#{@reset}"
         end
 
       _ ->
@@ -211,20 +213,9 @@ defmodule SpriteDiff.Formatter do
     end
   end
 
-  defp format_bytes(nil), do: "0 B"
-  defp format_bytes(bytes) when is_integer(bytes) do
-    cond do
-      bytes >= 1_073_741_824 -> "#{Float.round(bytes / 1_073_741_824, 1)} GB"
-      bytes >= 1_048_576 -> "#{Float.round(bytes / 1_048_576, 1)} MB"
-      bytes >= 1024 -> "#{Float.round(bytes / 1024, 1)} KB"
-      true -> "#{bytes} B"
-    end
-  end
-  defp format_bytes(_), do: "? B"
-
   defp format_bytes_signed(nil), do: "0 B"
-  defp format_bytes_signed(bytes) when bytes >= 0, do: "+#{format_bytes(bytes)}"
-  defp format_bytes_signed(bytes), do: "-#{format_bytes(abs(bytes))}"
+  defp format_bytes_signed(bytes) when bytes >= 0, do: "+#{Utils.format_bytes(bytes)}"
+  defp format_bytes_signed(bytes), do: "-#{Utils.format_bytes(abs(bytes))}"
 
   defp format_percent(nil), do: "N/A"
   defp format_percent(score) when is_float(score), do: "#{Float.round(score * 100, 1)}%"

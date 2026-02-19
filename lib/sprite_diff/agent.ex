@@ -8,7 +8,7 @@ defmodule SpriteDiff.Agent do
   - Can cache file contents for historical checkpoints
   """
 
-  alias SpriteDiff.API
+  alias SpriteDiff.{API, Utils}
 
   @agent_dir "/.sprite-diff"
   @manifests_dir "/.sprite-diff/manifests"
@@ -74,7 +74,7 @@ defmodule SpriteDiff.Agent do
   Trigger immediate manifest creation.
   """
   def trigger_manifest(sprite_name, checkpoint_id \\ nil) do
-    id = checkpoint_id || generate_checkpoint_id()
+    id = checkpoint_id || Utils.generate_checkpoint_id()
 
     case API.exec(sprite_name, "#{@agent_script} create-manifest #{id}", timeout: 120_000) do
       {:ok, %{exit_code: 0}} ->
@@ -136,11 +136,6 @@ defmodule SpriteDiff.Agent do
     # This is optional - the agent works without it via manual triggers
     API.exec(sprite_name, "systemctl --user daemon-reload 2>/dev/null || true")
     :ok
-  end
-
-  defp generate_checkpoint_id do
-    timestamp = DateTime.utc_now() |> DateTime.to_iso8601(:basic)
-    "checkpoint-#{timestamp}"
   end
 
   defp agent_script_content do
